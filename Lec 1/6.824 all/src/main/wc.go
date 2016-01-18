@@ -33,8 +33,8 @@ func Map(value string) *list.List {
 func Reduce(key string, values *list.List) string {
 	ret := 0
 	for item := values.Front(); item != nil; item = item.Next() {
-		kv := (item.Value)
-		at := kv.(string)
+		kv := item.Value
+		at := kv.(string) //type assertion
 		c, _ := strconv.Atoi(at)
 		ret = ret + c
 	}
