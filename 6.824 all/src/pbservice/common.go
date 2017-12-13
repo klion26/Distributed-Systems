@@ -13,7 +13,9 @@ type PutAppendArgs struct {
 	Key   string
 	Value string
 	// You'll have to add definitions here.
-
+	Op    string   //append or put
+	Index int      //use to identify the command(at most)
+	Me    string   //use to identify the command(at most)
 	// Field names must start with capital letters,
 	// otherwise RPC will break.
 }

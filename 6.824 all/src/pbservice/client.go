@@ -11,6 +11,8 @@ import "math/big"
 type Clerk struct {
 	vs *viewservice.Clerk
 	// Your declarations here
+	index int  //current index of the command
+	me    string//
 }
 
 // this may come in handy.
@@ -25,7 +27,8 @@ func MakeClerk(vshost string, me string) *Clerk {
 	ck := new(Clerk)
 	ck.vs = viewservice.MakeClerk(me, vshost)
 	// Your ck.* initializations here
-
+	ck.me = me
+	ck.index = 0
 	return ck
 }
 
@@ -84,6 +87,19 @@ func (ck *Clerk) Get(key string) string {
 func (ck *Clerk) PutAppend(key string, value string, op string) {
 
 	// Your code here.
+	args := &PutAppendArgs{}
+	args.Key = key
+	args.Value = value
+	args.Op = op
+	args.Index = ck.index
+	args.Me = ck.me
+
+	reply := &PutAppendReply{}
+	for true {
+		if call(ck.me, "PBServer.PutAppend", args, reply) {
+			break
+		}
+	}
 }
 
 //

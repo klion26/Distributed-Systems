@@ -34,20 +34,20 @@ type ViewServer struct {
 func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
 
 	// Your code here.
-	if args.Viewnum == 0 {
-		fmt.Println("viewnum0[[[[", vs.hasView, vs.hasAcked, "p", vs.curView.Primary, "me", args.Me, "b", vs.curView.Backup)
-	}
+//	if args.Viewnum == 0 {
+//		fmt.Println("viewnum0[[[[", vs.hasView, vs.hasAcked, "p", vs.curView.Primary, "me", args.Me, "b", vs.curView.Backup)
+//	}
 	vs.lastPing[args.Me] = time.Now()
 
 	vs.mu.Lock()
 	if !vs.hasView {
-		fmt.Println("Init view")
+//		fmt.Println("Init view")
 		vs.hasView = true
 		vs.curView.Viewnum += 1
 		vs.curView.Primary = args.Me
 		vs.curView.Backup = ""
 		vs.hasAcked = false
-		fmt.Println("Init view", args.Viewnum, vs.curView.Primary, vs.curView.Backup)
+//		fmt.Println("Init view", args.Viewnum, vs.curView.Primary, vs.curView.Backup)
 	} else {
 		if vs.curView.Primary == args.Me {
 			if args.Viewnum == 0 {
@@ -64,7 +64,7 @@ func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
 
 				vs.curView.Viewnum += 1
 				vs.hasAcked = false
-				fmt.Println("Primary with0", args.Viewnum, vs.curView.Primary, vs.curView.Backup)
+//				fmt.Println("Primary with0", args.Viewnum, vs.curView.Primary, vs.curView.Backup)
 			} else {
 				if args.Viewnum == vs.curView.Viewnum {
 					//为什么要加这个 args.View == vs.curView.Viewnum 的逻辑???
@@ -76,7 +76,7 @@ func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
 					} else {
 						vs.hasAcked = true
 					}
-					fmt.Println("Primary *", args.Viewnum, args.Me, vs.curView.Primary, vs.curView.Backup)
+//					fmt.Println("Primary *", args.Viewnum, args.Me, vs.curView.Primary, vs.curView.Backup)
 				}
 			}
 		} else {
@@ -85,16 +85,16 @@ func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
 					//backup restart 的这种情况, 是直接 viewnum 加1
 					//还是先将 backup 放到 secondbackup
 					//等下次 primary 来的时候再进行提升???
-					fmt.Println("Backup with0", vs.hasAcked, args.Viewnum, vs.curView.Primary, vs.curView.Backup)
+//					fmt.Println("Backup with0", vs.hasAcked, args.Viewnum, vs.curView.Primary, vs.curView.Backup)
 					if vs.hasAcked {
 						//vs.curView.Viewnum += 1
 						vs.secondBackup = args.Me
-						fmt.Println("change view by adding a backup", args.Me, vs.curView.Primary)
+//						fmt.Println("change view by adding a backup", args.Me, vs.curView.Primary)
 						vs.hasAcked =false
 					}
 				} else {
 					//do nothing
-					fmt.Println("Backup ack")
+//					fmt.Println("Backup ack")
 				}
 			} else {
 				if "" == vs.curView.Backup {
@@ -104,13 +104,13 @@ func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
 						//等 primary ack 的时候,将 second backup 提升为 backup
 						vs.secondBackup = args.Me
 						//vs.hasAcked = false
-						fmt.Println("change view by adding a backup", args.Me, vs.curView.Primary, vs.curView.Backup)
-						fmt.Println(vs.hasAcked)
+//						fmt.Println("change view by adding a backup", args.Me, vs.curView.Primary, vs.curView.Backup)
+//						fmt.Println(vs.hasAcked)
 					}
 				} else {
 					//do nothing
 					//这里是否需要将第三方的增加到 secondBackup???
-					fmt.Println("DDDDDDD")
+//					fmt.Println("DDDDDDD")
 				}
 			}
 		}
@@ -128,14 +128,13 @@ func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
 func (vs *ViewServer) Get(args *GetArgs, reply *GetReply) error {
 
 	// Your code here.
+	vs.mu.Lock()
 	if !vs.hasView {
 		return errors.New("current view is nil")
 	}
 
-	//这里需要加锁吗???
-	//需要加锁的原因: 可能获取到不对的 view
-	//不需要加锁的原因: 这个操作算原子操作???
 	reply.View = vs.curView
+	vs.mu.Unlock()
 	//end of my code
 	return nil
 }
@@ -158,15 +157,15 @@ func (vs *ViewServer) tick() {
 			 */
 				if vs.curView.Backup == "" {
 					vs.hasView = false
-					fmt.Println("view destory")
+//					fmt.Println("view destory")
 				} else {
-					fmt.Println("tick[[[[", vs.hasAcked)
+//					fmt.Println("tick[[[[", vs.hasAcked)
 					vs.curView.Primary = vs.curView.Backup
 					delete(vs.lastPing, vs.curView.Backup)
 					vs.curView.Backup = ""
 					vs.curView.Viewnum += 1
 					vs.hasAcked = false
-					fmt.Println("in tick", vs.hasAcked, "p", vs.curView.Primary, "b", vs.curView.Backup)
+//					fmt.Println("in tick", vs.hasAcked, "p", vs.curView.Primary, "b", vs.curView.Backup)
 				}
 			vs.mu.Unlock()
 		}
@@ -175,7 +174,7 @@ func (vs *ViewServer) tick() {
 			eclipsBackup := time.Now().Sub(vs.lastPing[vs.curView.Backup])
 			if eclipsBackup > DeadPings * PingInterval{
 				vs.mu.Lock()
-				fmt.Println("dead backup?")
+//				fmt.Println("dead backup?")
 				vs.curView.Backup = ""
 				//这里的 Viewnum 是否需要+1???
 //				vs.curView.Viewnum += 1

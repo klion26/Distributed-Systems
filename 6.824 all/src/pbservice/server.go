@@ -10,7 +10,10 @@ import "sync"
 import "sync/atomic"
 import "os"
 import "syscall"
-import "math/rand"
+import (
+	"math/rand"
+	"container/list"
+)
 
 
 
@@ -22,6 +25,8 @@ type PBServer struct {
 	me         string
 	vs         *viewservice.Clerk
 	// Your declarations here.
+	data       map[string]list.List
+	lastCommand map[string]string   //host:port:idx -> key, identify the comman
 }
 
 
@@ -36,8 +41,10 @@ func (pb *PBServer) Get(args *GetArgs, reply *GetReply) error {
 func (pb *PBServer) PutAppend(args *PutAppendArgs, reply *PutAppendReply) error {
 
 	// Your code here.
-
-
+	pb.mu.Lock()
+	//lastKey := pb.lastCommand[args.Me + ":" + args.Index]
+	//if lastKey != args.Key
+	pb.mu.Unlock()
 	return nil
 }
 
